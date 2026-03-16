@@ -1,24 +1,31 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel Estrategico de Mercado - Viviendea</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="main.css">
   <script defer src="main.js"></script>
 </head>
+
 <body class="bg-grid">
   <!-- Header -->
   <header class="sticky top-0 z-50 bg-[var(--bg-primary)]/90 backdrop-blur-md border-b border-[var(--border)]">
     <div class="max-w-[1600px] mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-4">
-          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-tertiary)] flex items-center justify-center">
+          <div
+            class="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-tertiary)] flex items-center justify-center">
             <svg class="w-6 h-6 text-[var(--bg-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
           <div>
@@ -29,11 +36,15 @@
         <div class="flex items-center gap-3">
           <!-- Upload Controls -->
           <input type="file" id="csvFileInput" accept=".csv" class="hidden">
-          <button id="uploadBtn" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--accent-tertiary)] hover:bg-[var(--accent-tertiary)]/80 text-white text-sm font-medium transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <button id="uploadBtn"
+            class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--accent-tertiary)] hover:bg-[var(--accent-tertiary)]/80 text-white text-sm font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
             Cargar CSV
           </button>
-          
+
           <!-- <span class="text-xs text-[var(--text-muted)] mono" id="lastUpdate">--</span> -->
         </div>
       </div>
@@ -42,181 +53,209 @@
 
   <!-- MAIN CONTENT WRAPPER -->
   <div id="mainContent">
-    
+
     <!-- Initial State: Drop Zone -->
     <div id="emptyState" class="max-w-[1600px] mx-auto px-4 py-20">
-        <div class="drop-zone rounded-xl p-12 text-center cursor-pointer" id="dropZone">
-            <div class="flex flex-col items-center justify-center gap-4">
-                <div class="w-20 h-20 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center mb-4">
-                    <svg class="w-10 h-10 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                </div>
-                <h2 class="text-xl font-semibold text-[var(--text-primary)]">Arrastra y suelta tu archivo CSV aqui</h2>
-                <p class="text-[var(--text-secondary)]">o haz clic para seleccionar un archivo</p>
-                <div class="mt-4 text-xs text-[var(--text-muted)] mono">
-                    Formato esperado: Separador ";" | Columnas: producto, brand, count_user_review, rating, rating_counts
-                </div>
-                <div class="mt-8">
-                    <button id="loadSampleBtn" class="px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:border-[var(--accent-secondary)] hover:text-[var(--accent-secondary)] transition-colors">
-                        Cargar datos de ejemplo (Demo)
-                    </button>
-                </div>
-            </div>
+      <div class="drop-zone rounded-xl p-12 text-center cursor-pointer" id="dropZone">
+        <div class="flex flex-col items-center justify-center gap-4">
+          <div class="w-20 h-20 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center mb-4">
+            <svg class="w-10 h-10 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h2 class="text-xl font-semibold text-[var(--text-primary)]">Arrastra y suelta tu archivo CSV aqui</h2>
+          <p class="text-[var(--text-secondary)]">o haz clic para seleccionar un archivo</p>
+          <div class="mt-4 text-xs text-[var(--text-muted)] mono">
+            Formato esperado: Separador ";" | Columnas: producto, brand, count_user_review, rating, rating_counts
+          </div>
+          <div class="mt-8">
+            <button id="loadSampleBtn"
+              class="px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:border-[var(--accent-secondary)] hover:text-[var(--accent-secondary)] transition-colors">
+              Cargar datos de ejemplo (Demo)
+            </button>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Dashboard Content (Hidden initially) -->
     <div id="dashboardView" class="hidden">
-        <!-- Category Filter -->
-        <div class="max-w-[1600px] mx-auto px-4 py-6">
+      <!-- Category Filter -->
+      <div class="max-w-[1600px] mx-auto px-4 py-6">
         <div class="flex flex-wrap gap-2" id="categoryFilters" role="tablist" aria-label="Filtrar por categoria">
-            <!-- Buttons injected here -->
-        </div>
-        </div>
-
-        <!-- KPI Cards -->
-        <div class="max-w-[1600px] mx-auto px-4 pb-6">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="card metric-card p-4 animate-in stagger-1">
-            <div class="flex items-start justify-between">
-                <div>
-                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Total Productos</p>
-                <p class="text-2xl font-bold mono" id="totalProductos">--</p>
-                </div>
-                <div class="p-2 rounded-lg bg-[var(--accent-primary)]/10">
-                <svg class="w-5 h-5 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                </div>
-            </div>
-            </div>
-
-            <div class="card metric-card p-4 animate-in stagger-2">
-            <div class="flex items-start justify-between">
-                <div>
-                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Reviews Totales</p>
-                <p class="text-2xl font-bold mono" id="totalReviews">--</p>
-                </div>
-                <div class="p-2 rounded-lg bg-[var(--accent-tertiary)]/10">
-                <svg class="w-5 h-5 text-[var(--accent-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-                </div>
-            </div>
-            </div>
-
-            <div class="card metric-card p-4 animate-in stagger-3">
-            <div class="flex items-start justify-between">
-                <div>
-                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Rating Promedio</p>
-                <p class="text-2xl font-bold mono" id="avgRating">--</p>
-                </div>
-                <div class="p-2 rounded-lg bg-[var(--warning)]/10">
-                <svg class="w-5 h-5 text-[var(--warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                </div>
-            </div>
-            </div>
-
-            <div class="card metric-card p-4 animate-in stagger-4">
-            <div class="flex items-start justify-between">
-                <div>
-                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Marcas</p>
-                <p class="text-2xl font-bold" id="totalMarcas">--</p>
-                </div>
-                <div class="p-2 rounded-lg bg-[var(--accent-secondary)]/10">
-                <svg class="w-5 h-5 text-[var(--accent-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                </div>
-            </div>
-            </div>
-        </div>
-        </div>
-        <!-- Ranking General Categoria -->
-        <div class="card p-6 scroll-reveal lg:col-span-2 m-4">
-        <div class="mb-6">
-          <h2 class="text-lg font-semibold">Ranking General</h2>
-          <p class="text-sm text-[var(--text-secondary)]">Ordenado por rating medio de reviews</p>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-left border-b border-[var(--border)] text-[var(--text-muted)]">
-                <th class="py-2">#</th>
-                <th>Marca</th>
-                <th>Rating</th>
-                <th>Reviews</th>
-                <th>Productos</th>
-              </tr>
-            </thead>
-            <tbody id="rankingTable"></tbody>
-          </table>
+          <!-- Buttons injected here -->
         </div>
       </div>
-        <!-- Main Grid -->
-        <main class="max-w-[1600px] mx-auto px-4 pb-8">
+
+      <!-- KPI Cards -->
+      <div class="max-w-[1600px] mx-auto px-4 pb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="card metric-card p-4 animate-in stagger-1">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Total Productos</p>
+                <p class="text-2xl font-bold mono" id="totalProductos">--</p>
+              </div>
+              <div class="p-2 rounded-lg bg-[var(--accent-primary)]/10">
+                <svg class="w-5 h-5 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="card metric-card p-4 animate-in stagger-2">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Reviews Totales</p>
+                <p class="text-2xl font-bold mono" id="totalReviews">--</p>
+              </div>
+              <div class="p-2 rounded-lg bg-[var(--accent-tertiary)]/10">
+                <svg class="w-5 h-5 text-[var(--accent-tertiary)]" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="card metric-card p-4 animate-in stagger-3">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Rating Promedio</p>
+                <p class="text-2xl font-bold mono" id="avgRating">--</p>
+              </div>
+              <div class="p-2 rounded-lg bg-[var(--warning)]/10">
+                <svg class="w-5 h-5 text-[var(--warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="card metric-card p-4 animate-in stagger-4">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Marcas</p>
+                <p class="text-2xl font-bold" id="totalMarcas">--</p>
+              </div>
+              <div class="p-2 rounded-lg bg-[var(--accent-secondary)]/10">
+                <svg class="w-5 h-5 text-[var(--accent-secondary)]" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Grid -->
+      <main class="max-w-[1600px] mx-auto px-4 pb-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            <!-- Chart 1: Quadrant -->
-            <div class="card p-6 scroll-reveal lg:col-span-2">
+          <!-- Ranking General Categoria -->
+          <div class="card p-6 scroll-reveal lg:col-span-2">
+            <div class="mb-6">
+              <h2 class="text-lg font-semibold">Ranking General</h2>
+              <!-- <p class="text-sm text-[var(--text-secondary)]">Ordenado por score ponderado (rating + volumen de reviews)</p> -->
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left border-b border-[var(--border)] text-[var(--text-muted)]">
+                    <th class="py-2">#</th>
+                    <th>Marca</th>
+                    <th>Rating</th>
+                    <th>Reviews</th>
+                    <th>Productos</th>
+                  </tr>
+                </thead>
+                <tbody id="rankingTable"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Chart 1: Quadrant -->
+          <div class="card p-6 scroll-reveal lg:col-span-2">
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
-                <div>
+              <div>
                 <h2 class="text-lg font-semibold">Cuadrante de Posicionamiento</h2>
                 <p class="text-sm text-[var(--text-secondary)]">Mapa de Guerra: Volumen vs Satisfaccion</p>
-                </div>
-                <div class="flex flex-wrap gap-4 text-xs">
-                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--accent-primary)]"></span><span class="text-[var(--text-secondary)]">Lideres</span></div>
-                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--warning)]"></span><span class="text-[var(--text-secondary)]">Vulnerables</span></div>
-                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--danger)]"></span><span class="text-[var(--text-secondary)]">Crisis</span></div>
-                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--text-muted)]"></span><span class="text-[var(--text-secondary)]">Irrelevantes</span></div>
-                </div>
+              </div>
+              <div class="flex flex-wrap gap-4 text-xs">
+                <div class="flex items-center gap-2"><span
+                    class="w-3 h-3 rounded-full bg-[var(--accent-primary)]"></span><span
+                    class="text-[var(--text-secondary)]">Lideres</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--warning)]"></span><span
+                    class="text-[var(--text-secondary)]">Vulnerables</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--danger)]"></span><span
+                    class="text-[var(--text-secondary)]">Crisis</span></div>
+                <div class="flex items-center gap-2"><span
+                    class="w-3 h-3 rounded-full bg-[var(--text-muted)]"></span><span
+                    class="text-[var(--text-secondary)]">Irrelevantes</span></div>
+              </div>
             </div>
             <div class="relative h-[400px]"><canvas id="quadrantChart"></canvas></div>
-            </div>
+          </div>
 
-            <!-- Chart 2: Share of Voice -->
-            <div class="card p-6 scroll-reveal">
+          <!-- Chart 2: Share of Voice -->
+          <div class="card p-6 scroll-reveal">
             <div class="mb-6">
-                <h2 class="text-lg font-semibold">Share of Voice vs Satisfaccion</h2>
-                <p class="text-sm text-[var(--text-secondary)]">Gap de Oportunidad</p>
+              <h2 class="text-lg font-semibold">Share of Voice vs Satisfaccion</h2>
+              <p class="text-sm text-[var(--text-secondary)]">Gap de Oportunidad</p>
             </div>
             <div class="h-[350px]"><canvas id="voiceChart"></canvas></div>
-            </div>
+          </div>
 
-            <!-- Chart 3: Sentiment Stack -->
-            <div class="card p-6 scroll-reveal">
+          <!-- Chart 3: Sentiment Stack -->
+          <div class="card p-6 scroll-reveal">
             <div class="mb-6">
-                <h2 class="text-lg font-semibold">Sentiment Stack</h2>
-                <p class="text-sm text-[var(--text-secondary)]">Distribucion de estrellas por marca</p>
+              <h2 class="text-lg font-semibold">Sentiment Stack</h2>
+              <p class="text-sm text-[var(--text-secondary)]">Distribucion de estrellas por marca</p>
             </div>
             <div class="h-[350px]"><canvas id="sentimentChart"></canvas></div>
-            </div>
+          </div>
 
-            <!-- Chart 4: Treemap -->
-            <div class="card p-6 scroll-reveal lg:col-span-2">
+          <!-- Chart 4: Treemap -->
+          <div class="card p-6 scroll-reveal lg:col-span-2">
             <div class="mb-6">
-                <h2 class="text-lg font-semibold">Ranking de Penetracion</h2>
-                <p class="text-sm text-[var(--text-secondary)]">Tamano = Productos | Color = Rating medio</p>
+              <h2 class="text-lg font-semibold">Ranking de Penetracion</h2>
+              <p class="text-sm text-[var(--text-secondary)]">Tamano = Productos | Color = Rating medio</p>
             </div>
             <div class="h-[300px]" id="treemapContainer"></div>
-            </div>
+          </div>
         </div>
-        </main>
+      </main>
     </div>
   </div>
 
   <!-- Modal -->
-  <div id="brandModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" role="dialog">
+  <div id="brandModal"
+    class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" role="dialog">
     <div class="card max-w-lg w-full p-6">
       <div class="flex items-start justify-between mb-4">
         <div>
           <h3 id="modalTitle" class="text-xl font-semibold">Detalle de Marca</h3>
           <p id="modalSubtitle" class="text-sm text-[var(--text-secondary)]"></p>
         </div>
-        <button id="closeModal" class="p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors" aria-label="Cerrar">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        <button id="closeModal" class="p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"
+          aria-label="Cerrar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
       <div id="modalContent" class="space-y-4"></div>
     </div>
   </div>
 
-  
+
 </body>
+
 </html>
