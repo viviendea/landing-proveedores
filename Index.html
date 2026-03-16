@@ -236,7 +236,29 @@
             </div>
         </div>
         </div>
+        <!-- Ranking General Categoria -->
+        <!-- Ranking General -->
+        <div class="card p-6 scroll-reveal lg:col-span-2">
+        <div class="mb-6">
+          <h2 class="text-lg font-semibold">Ranking General</h2>
+          <p class="text-sm text-[var(--text-secondary)]">Ordenado por rating medio de reviews</p>
+        </div>
 
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left border-b border-[var(--border)] text-[var(--text-muted)]">
+                <th class="py-2">#</th>
+                <th>Marca</th>
+                <th>Rating</th>
+                <th>Reviews</th>
+                <th>Productos</th>
+              </tr>
+            </thead>
+            <tbody id="rankingTable"></tbody>
+          </table>
+        </div>
+      </div>
         <!-- Main Grid -->
         <main class="max-w-[1600px] mx-auto px-4 pb-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -625,6 +647,22 @@ Lavadora;Electrolux;"Lavadora Electrolux ea2f6841cf";"La lavadora EA2F6841CF de 
         
         container.appendChild(svg);
     }
+    
+    function renderRanking(data) {
+       const table = document.getElementById("rankingTable");
+
+        const sorted = [...data].sort((a, b) => b.rating - a.rating);
+
+        table.innerHTML = sorted.map((b, i) => `
+          <tr class="border-b border-[var(--border)] hover:bg-[var(--bg-secondary)]">
+            <td class="py-2 mono">${i + 1}</td>
+            <td class="font-medium">${b.name}</td>
+            <td class="text-[var(--accent-primary)] mono">${b.rating.toFixed(2)}</td>
+            <td class="mono">${formatNumber(b.count_user_review)}</td>
+            <td class="mono">${b.products}</td>
+          </tr>
+        `).join("");
+      }
 
     // ==========================================
     // UI UPDATES
@@ -718,13 +756,26 @@ Lavadora;Electrolux;"Lavadora Electrolux ea2f6841cf";"La lavadora EA2F6841CF de 
         initVoiceChart(aggregatedData);
         initSentimentChart(aggregatedData);
         initTreemap(aggregatedData);
+        
+        renderRanking(aggregatedData);
     }
 
     // ==========================================
     // EVENT LISTENERS
     // ==========================================
     
+    async function loadCSVFromFolder() {
+      try {
+        const response = await fetch("./viviendea.csv");
+        const text = await response.text();
+        processCSVData(text);
+      } catch (err) {
+        console.error("No se pudo cargar data.csv", err);
+      }
+    }
+    
     document.addEventListener('DOMContentLoaded', () => {
+        loadCSVFromFolder();
         
         const fileInput = document.getElementById('csvFileInput');
         const dropZone = document.getElementById('dropZone');
