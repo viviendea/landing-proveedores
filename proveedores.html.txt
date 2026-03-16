@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Estrategico de Mercado - Viviendea</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0e14;
+      --bg-secondary: #111820;
+      --bg-card: #161d27;
+      --border: #1e2a38;
+      --text-primary: #e8edf4;
+      --text-secondary: #7a8a9c;
+      --text-muted: #4a5a6c;
+      --accent-primary: #00d4aa;
+      --accent-secondary: #ff6b35;
+      --accent-tertiary: #3b82f6;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    .bg-grid {
+      background-image: 
+        linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+      opacity: 0.5;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-in { animation: fadeInUp 0.6s ease-out forwards; }
+    .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+    .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+    .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+    .stagger-4 { animation-delay: 0.4s; opacity: 0; }
+
+    .category-btn { transition: all 0.3s ease; }
+    .category-btn.active {
+      background: var(--accent-primary);
+      color: var(--bg-primary);
+    }
+    .category-btn:not(.active):hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    .scroll-reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease-out;
+    }
+    .scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    .metric-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .metric-card:hover { transform: translateY(-4px); }
+
+    :focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+
+    .treemap-rect { transition: opacity 0.3s ease; cursor: pointer; }
+    .treemap-rect:hover { opacity: 0.8; }
+
+    /* Drop Zone Styles */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      transition: all 0.3s ease;
+      background: rgba(22, 29, 39, 0.5);
+    }
+    .drop-zone.drag-over {
+      border-color: var(--accent-primary);
+      background: rgba(0, 212, 170, 0.05);
+      transform: scale(1.01);
+    }
+    .drop-zone:hover {
+      border-color: var(--text-muted);
+    }
+    
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body class="bg-grid">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-[var(--bg-primary)]/90 backdrop-blur-md border-b border-[var(--border)]">
+    <div class="max-w-[1600px] mx-auto px-4 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-tertiary)] flex items-center justify-center">
+            <svg class="w-6 h-6 text-[var(--bg-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-lg font-semibold tracking-tight">Panel Estrategico de Mercado</h1>
+            <p class="text-xs text-[var(--text-secondary)] mono">VIVIENDEA / DATA UPLOAD</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- Upload Controls -->
+          <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+          <button id="uploadBtn" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--accent-tertiary)] hover:bg-[var(--accent-tertiary)]/80 text-white text-sm font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Cargar CSV
+          </button>
+          
+          <span class="text-xs text-[var(--text-muted)] mono" id="lastUpdate">--</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT WRAPPER -->
+  <div id="mainContent">
+    
+    <!-- Initial State: Drop Zone -->
+    <div id="emptyState" class="max-w-[1600px] mx-auto px-4 py-20">
+        <div class="drop-zone rounded-xl p-12 text-center cursor-pointer" id="dropZone">
+            <div class="flex flex-col items-center justify-center gap-4">
+                <div class="w-20 h-20 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center mb-4">
+                    <svg class="w-10 h-10 text-[var(--text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-[var(--text-primary)]">Arrastra y suelta tu archivo CSV aqui</h2>
+                <p class="text-[var(--text-secondary)]">o haz clic para seleccionar un archivo</p>
+                <div class="mt-4 text-xs text-[var(--text-muted)] mono">
+                    Formato esperado: Separador ";" | Columnas: producto, brand, count_user_review, rating, rating_counts
+                </div>
+                <div class="mt-8">
+                    <button id="loadSampleBtn" class="px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:border-[var(--accent-secondary)] hover:text-[var(--accent-secondary)] transition-colors">
+                        Cargar datos de ejemplo (Demo)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Content (Hidden initially) -->
+    <div id="dashboardView" class="hidden">
+        <!-- Category Filter -->
+        <div class="max-w-[1600px] mx-auto px-4 py-6">
+        <div class="flex flex-wrap gap-2" id="categoryFilters" role="tablist" aria-label="Filtrar por categoria">
+            <!-- Buttons injected here -->
+        </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="max-w-[1600px] mx-auto px-4 pb-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="card metric-card p-4 animate-in stagger-1">
+            <div class="flex items-start justify-between">
+                <div>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Total Productos</p>
+                <p class="text-2xl font-bold mono" id="totalProductos">--</p>
+                </div>
+                <div class="p-2 rounded-lg bg-[var(--accent-primary)]/10">
+                <svg class="w-5 h-5 text-[var(--accent-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                </div>
+            </div>
+            </div>
+
+            <div class="card metric-card p-4 animate-in stagger-2">
+            <div class="flex items-start justify-between">
+                <div>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Reviews Totales</p>
+                <p class="text-2xl font-bold mono" id="totalReviews">--</p>
+                </div>
+                <div class="p-2 rounded-lg bg-[var(--accent-tertiary)]/10">
+                <svg class="w-5 h-5 text-[var(--accent-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                </div>
+            </div>
+            </div>
+
+            <div class="card metric-card p-4 animate-in stagger-3">
+            <div class="flex items-start justify-between">
+                <div>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Rating Promedio</p>
+                <p class="text-2xl font-bold mono" id="avgRating">--</p>
+                </div>
+                <div class="p-2 rounded-lg bg-[var(--warning)]/10">
+                <svg class="w-5 h-5 text-[var(--warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                </div>
+            </div>
+            </div>
+
+            <div class="card metric-card p-4 animate-in stagger-4">
+            <div class="flex items-start justify-between">
+                <div>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Marcas</p>
+                <p class="text-2xl font-bold" id="totalMarcas">--</p>
+                </div>
+                <div class="p-2 rounded-lg bg-[var(--accent-secondary)]/10">
+                <svg class="w-5 h-5 text-[var(--accent-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+            </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Main Grid -->
+        <main class="max-w-[1600px] mx-auto px-4 pb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Chart 1: Quadrant -->
+            <div class="card p-6 scroll-reveal lg:col-span-2">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+                <div>
+                <h2 class="text-lg font-semibold">Cuadrante de Posicionamiento</h2>
+                <p class="text-sm text-[var(--text-secondary)]">Mapa de Guerra: Volumen vs Satisfaccion</p>
+                </div>
+                <div class="flex flex-wrap gap-4 text-xs">
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--accent-primary)]"></span><span class="text-[var(--text-secondary)]">Lideres</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--warning)]"></span><span class="text-[var(--text-secondary)]">Vulnerables</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--danger)]"></span><span class="text-[var(--text-secondary)]">Crisis</span></div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--text-muted)]"></span><span class="text-[var(--text-secondary)]">Irrelevantes</span></div>
+                </div>
+            </div>
+            <div class="relative h-[400px]"><canvas id="quadrantChart"></canvas></div>
+            </div>
+
+            <!-- Chart 2: Share of Voice -->
+            <div class="card p-6 scroll-reveal">
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold">Share of Voice vs Satisfaccion</h2>
+                <p class="text-sm text-[var(--text-secondary)]">Gap de Oportunidad</p>
+            </div>
+            <div class="h-[350px]"><canvas id="voiceChart"></canvas></div>
+            </div>
+
+            <!-- Chart 3: Sentiment Stack -->
+            <div class="card p-6 scroll-reveal">
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold">Sentiment Stack</h2>
+                <p class="text-sm text-[var(--text-secondary)]">Distribucion de estrellas por marca</p>
+            </div>
+            <div class="h-[350px]"><canvas id="sentimentChart"></canvas></div>
+            </div>
+
+            <!-- Chart 4: Treemap -->
+            <div class="card p-6 scroll-reveal lg:col-span-2">
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold">Ranking de Penetracion</h2>
+                <p class="text-sm text-[var(--text-secondary)]">Tamano = Productos | Color = Rating medio</p>
+            </div>
+            <div class="h-[300px]" id="treemapContainer"></div>
+            </div>
+        </div>
+        </main>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="brandModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" role="dialog">
+    <div class="card max-w-lg w-full p-6">
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <h3 id="modalTitle" class="text-xl font-semibold">Detalle de Marca</h3>
+          <p id="modalSubtitle" class="text-sm text-[var(--text-secondary)]"></p>
+        </div>
+        <button id="closeModal" class="p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors" aria-label="Cerrar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="modalContent" class="space-y-4"></div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // SAMPLE DATA (Used for Demo Button)
+    // ==========================================
+    const sampleCsvData = `producto;brand;title;description;attributes;picture;datetime_created;count_user_review;rating;rating_counts
+Campana;AEG;"Campana AEG DPB5950M";"AEG Campana telescÃ³pica AEG DPB5950M con 4 velocidades Frontal de la campana no incluido en el precio.";"{"Peso": "13.2 kg", "Color": "Gris"}";https://example.com/pic.jpg;"2026-01-19 10:04:24";4;4.75;"{"1": 0, "2": 0, "3": 0, "4": 1, "5": 3}"
+Horno;Siemens;"Horno Siemens hb578ges7";"Descubre la excelencia culinaria...";"{"color": "Cristal negro"}";https://example.com/pic.jpg;"2026-01-16 14:00:44";9;4.888888835906982;"{"1": 0, "2": 0, "3": 0, "4": 1, "5": 8}"
+Extractor;Bosch;"Campana decorativa Bosch DWK98PR60";"El ventilador DWK98PR60 de Bosch...";"{"Peso": "25.488 kg"}";https://example.com/pic.jpg;"2026-01-19 10:14:18";4;5;"{"1": 0, "2": 0, "3": 0, "4": 0, "5": 4}"
+Lavadora;Electrolux;"Lavadora Electrolux ea2f6841cf";"La lavadora EA2F6841CF de Electrolux...";"{"Model": "EA2F6841CF"}";https://example.com/pic.jpg;"2026-01-19 10:07:31";2;5;"{"1": 0, "2": 0, "3": 0, "4": 0, "5": 2}"`;
+
+    // ==========================================
+    // STATE & CONFIG
+    // ==========================================
+    let currentCategory = 'all';
+    let charts = {};
+    let rawRows = [];
+    let aggregatedData = [];
+
+    // ==========================================
+    // PARSING & AGGREGATION
+    // ==========================================
+    function parseCSV(str) {
+      const lines = str.trim().split('\n');
+      const headers = lines[0].split(';');
+      return lines.slice(1).map(line => {
+        // Robust split handling quotes (basic implementation)
+        // Note: A full parser library is recommended for complex CSVs with line breaks inside quotes
+        const cols = line.split(';');
+        const obj = {};
+        headers.forEach((h, i) => {
+            let val = cols[i] || '';
+            // Clean quotes if present
+            if (val.startsWith('"') && val.endsWith('"')) {
+                val = val.slice(1, -1);
+            }
+            obj[h.trim()] = val.trim();
+        });
+        return obj;
+      }).filter(row => row.brand); // Filter empty rows
+    }
+
+    function aggregateData(rows, category) {
+      const filtered = category === 'all' ? rows : rows.filter(r => r.producto === category);
+      
+      const brandsMap = {};
+
+      filtered.forEach(row => {
+        const b = row.brand;
+        const reviews = parseInt(row.count_user_review) || 0;
+        const rating = parseFloat(row.rating) || 0;
+        
+        if (!brandsMap[b]) {
+          brandsMap[b] = {
+            name: b,
+            category: row.producto,
+            count_user_review: 0,
+            rating_sum_weighted: 0, 
+            products: 0,
+            distribution: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 }
+          };
+        }
+
+        brandsMap[b].count_user_review += reviews;
+        brandsMap[b].rating_sum_weighted += (rating * reviews);
+        brandsMap[b].products += 1;
+
+        try {
+            const countsRaw = row.rating_counts;
+            // Handle double quotes escaping from CSV if necessary
+            const countsJson = countsRaw.replace(/""/g, '"');
+            const counts = JSON.parse(countsJson);
+            
+            for(let i=1; i<=5; i++) {
+                brandsMap[b].distribution[i] += (counts[i] || 0);
+            }
+        } catch (e) {
+            console.warn("Error parsing rating_counts for row", row.brand, e);
+        }
+      });
+
+      const result = Object.values(brandsMap).map(b => {
+        const avgRating = b.count_user_review > 0 
+          ? b.rating_sum_weighted / b.count_user_review 
+          : 0; 
+        
+        const distArr = [
+            b.distribution["1"], 
+            b.distribution["2"], 
+            b.distribution["3"], 
+            b.distribution["4"], 
+            b.distribution["5"]
+        ];
+        
+        return {
+            name: b.name,
+            count_user_review: b.count_user_review,
+            rating: avgRating,
+            products: b.products,
+            distribution: distArr,
+            category: b.category
+        };
+      });
+
+      return result;
+    }
+
+    // ==========================================
+    // CHARTING FUNCTIONS
+    // ==========================================
+    
+    function formatNumber(num) {
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toString();
+    }
+
+    function getQuadrantColor(rating, reviewCount, medR, medRev) {
+        if (rating >= medR && reviewCount >= medRev) return '#00d4aa'; // Leader
+        if (rating >= medR && reviewCount < medRev) return '#f59e0b'; // Vulnerable
+        if (rating < medR && reviewCount >= medRev) return '#ef4444'; // Crisis
+        return '#4a5a6c'; // Irrelevant
+    }
+
+    function initQuadrantChart(data) {
+      const ctx = document.getElementById('quadrantChart').getContext('2d');
+      if (charts.quadrant) charts.quadrant.destroy();
+      
+      if(data.length === 0) return;
+
+      const ratings = data.map(d => d.rating).sort((a,b) => a-b);
+      const reviews = data.map(d => d.count_user_review).sort((a,b) => a-b);
+      const medR = ratings[Math.floor(ratings.length/2)] || 0;
+      const medRev = reviews[Math.floor(reviews.length/2)] || 0;
+
+      const datasets = [{
+        data: data.map(b => ({ x: b.count_user_review, y: b.rating, ...b })),
+        backgroundColor: data.map(b => getQuadrantColor(b.rating, b.count_user_review, medR, medRev)),
+        pointRadius: data.map(b => Math.max(8, Math.min(25, Math.sqrt(b.products) * 4))),
+        pointHoverRadius: 12,
+        borderColor: 'rgba(255,255,255,0.2)',
+        borderWidth: 2
+      }];
+
+      charts.quadrant = new Chart(ctx, {
+        type: 'scatter',
+        data: { datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#161d27',
+              callbacks: {
+                title: (i) => i[0].raw.name,
+                label: (i) => `Reviews: ${formatNumber(i.raw.x)} | Rating: ${i.raw.y.toFixed(2)}`
+              }
+            }
+          },
+          scales: {
+            x: { 
+                title: { display: true, text: 'Volumen de Reviews', color: '#7a8a9c' },
+                grid: { color: 'rgba(30, 42, 56, 0.5)' },
+                ticks: { color: '#4a5a6c' }
+            },
+            y: { 
+                title: { display: true, text: 'Rating Medio', color: '#7a8a9c' },
+                grid: { color: 'rgba(30, 42, 56, 0.5)' },
+                ticks: { color: '#4a5a6c' },
+                suggestedMin: Math.min(...data.map(d=>d.rating)) - 0.5,
+                suggestedMax: 5.1
+            }
+          },
+          onClick: (e, elements) => {
+              if(elements.length > 0) showBrandModal(data[elements[0].index]);
+          }
+        }
+      });
+    }
+
+    function initVoiceChart(data) {
+      const ctx = document.getElementById('voiceChart').getContext('2d');
+      if (charts.voice) charts.voice.destroy();
+      if(data.length === 0) return;
+
+      const totalReviews = data.reduce((s, b) => s + b.count_user_review, 0);
+      const sorted = [...data].sort((a,b) => b.count_user_review - a.count_user_review);
+
+      charts.voice = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sorted.map(b => b.name),
+          datasets: [
+            {
+              label: 'Share of Voice (%)',
+              data: sorted.map(b => totalReviews > 0 ? ((b.count_user_review / totalReviews) * 100).toFixed(1) : 0),
+              backgroundColor: '#3b82f6',
+              borderRadius: 4
+            },
+            {
+              label: 'Rating Normalizado (%)',
+              data: sorted.map(b => (b.rating / 5) * 100),
+              backgroundColor: '#00d4aa',
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { color: '#7a8a9c' } } },
+          scales: {
+            x: { grid: { color: 'rgba(30, 42, 56, 0.5)' }, ticks: { color: '#4a5a6c' } },
+            y: { grid: { display: false }, ticks: { color: '#e8edf4' } }
+          }
+        }
+      });
+    }
+
+    function initSentimentChart(data) {
+      const ctx = document.getElementById('sentimentChart').getContext('2d');
+      if (charts.sentiment) charts.sentiment.destroy();
+      if(data.length === 0) return;
+
+      const sorted = [...data].sort((a,b) => b.rating - a.rating);
+
+      const getDist = (distArr) => {
+          const sum = distArr.reduce((a,b) => a+b, 0);
+          if(sum === 0) return [0,0,0,0,0];
+          return distArr.map(v => (v/sum)*100);
+      };
+
+      charts.sentiment = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sorted.map(b => b.name),
+          datasets: [
+            { label: '1★', data: sorted.map(b => getDist(b.distribution)[0]), backgroundColor: '#ef4444' },
+            { label: '2★', data: sorted.map(b => getDist(b.distribution)[1]), backgroundColor: '#f97316' },
+            { label: '3★', data: sorted.map(b => getDist(b.distribution)[2]), backgroundColor: '#f59e0b' },
+            { label: '4★', data: sorted.map(b => getDist(b.distribution)[3]), backgroundColor: '#84cc16' },
+            { label: '5★', data: sorted.map(b => getDist(b.distribution)[4]), backgroundColor: '#00d4aa' }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { color: '#7a8a9c', boxWidth: 12 } } },
+          scales: {
+            x: { stacked: true, max: 100, grid: { display: false }, ticks: { display: false } },
+            y: { stacked: true, grid: { display: false }, ticks: { color: '#e8edf4' } }
+          }
+        }
+      });
+    }
+
+    function initTreemap(data) {
+        const container = document.getElementById('treemapContainer');
+        container.innerHTML = '';
+        if(data.length === 0) return;
+        
+        const sorted = [...data].sort((a,b) => b.products - a.products);
+        const total = sorted.reduce((s,b) => s + b.products, 0);
+        
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
+        
+        const width = container.offsetWidth;
+        const height = container.offsetHeight;
+        
+        let x = 0, y = 0;
+        const padding = 4;
+        const rowHeight = height / Math.ceil(sorted.length / 3); 
+        
+        sorted.forEach((b, i) => {
+            const w = Math.max((b.products / total) * width * 2.5, 60); 
+            const h = rowHeight - padding;
+            
+            if (x + w > width) {
+                x = 0;
+                y += rowHeight;
+            }
+            
+            const hue = b.rating >= 4.8 ? 160 : b.rating >= 4.5 ? 120 : b.rating >= 4.0 ? 60 : 0;
+            
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', x);
+            rect.setAttribute('y', y);
+            rect.setAttribute('width', Math.min(w - padding, width - x));
+            rect.setAttribute('height', h);
+            rect.setAttribute('fill', `hsl(${hue}, 70%, 35%)`);
+            rect.setAttribute('rx', 4);
+            rect.setAttribute('class', 'treemap-rect');
+            
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', x + 8);
+            text.setAttribute('y', y + 18);
+            text.setAttribute('fill', '#e8edf4');
+            text.setAttribute('font-size', '12');
+            text.setAttribute('font-weight', '600');
+            text.textContent = b.name;
+            
+            const sub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            sub.setAttribute('x', x + 8);
+            sub.setAttribute('y', y + 32);
+            sub.setAttribute('fill', '#7a8a9c');
+            sub.setAttribute('font-size', '10');
+            sub.textContent = `${b.products} prod | ${b.rating.toFixed(2)}`;
+            
+            svg.appendChild(rect);
+            svg.appendChild(text);
+            svg.appendChild(sub);
+            
+            x += w;
+        });
+        
+        container.appendChild(svg);
+    }
+
+    // ==========================================
+    // UI UPDATES
+    // ==========================================
+    
+    function updateKPIs(rows, data) {
+        const totalProd = rows.length;
+        const totalRev = data.reduce((s,b) => s + b.count_user_review, 0);
+        const avgR = data.length > 0 ? data.reduce((s,b) => s + b.rating, 0) / data.length : 0;
+        
+        document.getElementById('totalProductos').textContent = totalProd;
+        document.getElementById('totalReviews').textContent = formatNumber(totalRev);
+        document.getElementById('avgRating').textContent = avgR.toFixed(2);
+        document.getElementById('totalMarcas').textContent = data.length;
+    }
+
+    function showBrandModal(brand) {
+        document.getElementById('modalTitle').textContent = brand.name;
+        document.getElementById('modalSubtitle').textContent = `${brand.products} productos | ${brand.category}`;
+        
+        const totalRev = brand.count_user_review;
+        const totalStars = brand.distribution.reduce((a,b) => a+b, 0);
+        
+        const html = `
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-[var(--bg-secondary)] p-4 rounded-lg">
+                    <p class="text-xs text-[var(--text-muted)]">Reviews</p>
+                    <p class="text-xl font-bold">${formatNumber(totalRev)}</p>
+                </div>
+                <div class="bg-[var(--bg-secondary)] p-4 rounded-lg">
+                    <p class="text-xs text-[var(--text-muted)]">Rating</p>
+                    <p class="text-xl font-bold text-[var(--accent-primary)]">${brand.rating.toFixed(2)}</p>
+                </div>
+            </div>
+            <div class="bg-[var(--bg-secondary)] p-4 rounded-lg">
+                <p class="text-xs text-[var(--text-muted)] mb-2">Distribucion Estrellas</p>
+                <div class="flex h-4 rounded overflow-hidden">
+                    <div class="bg-[#ef4444]" style="width: ${totalStars > 0 ? (brand.distribution[0]/totalStars)*100 : 0}%"></div>
+                    <div class="bg-[#f97316]" style="width: ${totalStars > 0 ? (brand.distribution[1]/totalStars)*100 : 0}%"></div>
+                    <div class="bg-[#f59e0b]" style="width: ${totalStars > 0 ? (brand.distribution[2]/totalStars)*100 : 0}%"></div>
+                    <div class="bg-[#84cc16]" style="width: ${totalStars > 0 ? (brand.distribution[3]/totalStars)*100 : 0}%"></div>
+                    <div class="bg-[#00d4aa]" style="width: ${totalStars > 0 ? (brand.distribution[4]/totalStars)*100 : 0}%"></div>
+                </div>
+            </div>
+        `;
+        document.getElementById('modalContent').innerHTML = html;
+        document.getElementById('brandModal').classList.remove('hidden');
+    }
+    
+    function showDashboard() {
+        document.getElementById('emptyState').classList.add('hidden');
+        document.getElementById('dashboardView').classList.remove('hidden');
+        
+        // Trigger scroll reveal manually if needed
+        setTimeout(() => {
+            document.querySelectorAll('.scroll-reveal').forEach(el => el.classList.add('visible'));
+        }, 100);
+    }
+
+    // ==========================================
+    // DATA LOADING LOGIC
+    // ==========================================
+    
+    function processCSVData(csvText) {
+        rawRows = parseCSV(csvText);
+        
+        // Generate Category Buttons
+        const categories = [...new Set(rawRows.map(r => r.producto))];
+        const filterContainer = document.getElementById('categoryFilters');
+        
+        let btnHtml = `<button class="category-btn active px-4 py-2 rounded-lg border border-[var(--border)] text-sm font-medium" data-category="all">Todas (${rawRows.length})</button>`;
+        categories.forEach(cat => {
+            const count = rawRows.filter(r => r.producto === cat).length;
+            btnHtml += `<button class="category-btn px-4 py-2 rounded-lg border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)]" data-category="${cat}">${cat} (${count})</button>`;
+        });
+        filterContainer.innerHTML = btnHtml;
+
+        updateDashboard('all');
+        showDashboard();
+        
+        // Update header date
+        const dates = rawRows.map(r => r.datetime_created).sort();
+        if(dates.length > 0) document.getElementById('lastUpdate').textContent = dates[dates.length-1].split(' ')[0];
+    }
+    
+    function updateDashboard(cat) {
+        aggregatedData = aggregateData(rawRows, cat);
+        const rowsForKPI = cat === 'all' ? rawRows : rawRows.filter(r => r.producto === cat);
+        updateKPIs(rowsForKPI, aggregatedData);
+        initQuadrantChart(aggregatedData);
+        initVoiceChart(aggregatedData);
+        initSentimentChart(aggregatedData);
+        initTreemap(aggregatedData);
+    }
+
+    // ==========================================
+    // EVENT LISTENERS
+    // ==========================================
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        const fileInput = document.getElementById('csvFileInput');
+        const dropZone = document.getElementById('dropZone');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const loadSampleBtn = document.getElementById('loadSampleBtn');
+        
+        // 1. Click Upload Button
+        uploadBtn.addEventListener('click', () => fileInput.click());
+        
+        // 2. File Input Change
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleFile(file);
+        });
+
+        // 3. Load Sample Data
+        loadSampleBtn.addEventListener('click', () => {
+            processCSVData(sampleCsvData);
+        });
+        
+        // 4. Drag & Drop Logic
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            if (file) handleFile(file);
+        }, false);
+        
+        function handleFile(file) {
+            if (!file.name.endsWith('.csv')) {
+                alert('Por favor, sube un archivo .csv');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => processCSVData(e.target.result);
+            reader.readAsText(file);
+        }
+
+        // Category Filter Clicks (Delegated)
+        document.getElementById('categoryFilters').addEventListener('click', (e) => {
+            if(e.target.matches('.category-btn')) {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentCategory = e.target.dataset.category;
+                updateDashboard(currentCategory);
+            }
+        });
+
+        // Modal Close
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('brandModal').classList.add('hidden');
+        });
+        
+        document.getElementById('brandModal').addEventListener('click', (e) => {
+            if(e.target.id === 'brandModal') e.target.classList.add('hidden');
+        });
+    });
+  </script>
+</body>
+</html>
