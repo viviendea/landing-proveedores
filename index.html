@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Estrategico de Mercado - Viviendea</title>
+  <title>Panel de análisis de mercado - Viviendea</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
@@ -33,20 +33,20 @@
             <p class="text-xs text-[var(--text-secondary)] mono">VIVIENDEA & ATRIBUS</p>
           </div>
         </div>
-        <div class="flex items-center gap-3">
+        <!-- <div class="flex items-center gap-3"> -->
           <!-- Upload Controls -->
-          <input type="file" id="csvFileInput" accept=".csv" class="hidden">
-          <button id="uploadBtn"
-            class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--accent-tertiary)] hover:bg-[var(--accent-tertiary)]/80 text-white text-sm font-medium transition-colors">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-            Cargar CSV
-          </button>
+          <!-- <input type="file" id="csvFileInput" accept=".csv" class="hidden"> -->
+          <!-- <button id="uploadBtn" -->
+            <!-- class="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--accent-tertiary)] hover:bg-[var(--accent-tertiary)]/80 text-white text-sm font-medium transition-colors"> -->
+            <!-- <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"> -->
+              <!-- <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" -->
+                <!-- d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /> -->
+            <!-- </svg> -->
+            <!-- Cargar archivo CSV -->
+          <!-- </button> -->
 
           <!-- <span class="text-xs text-[var(--text-muted)] mono" id="lastUpdate">--</span> -->
-        </div>
+        <!-- </div> -->
       </div>
     </div>
   </header>
@@ -64,15 +64,15 @@
                 d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <h2 class="text-xl font-semibold text-[var(--text-primary)]">Arrastra y suelta tu archivo CSV aqui</h2>
-          <p class="text-[var(--text-secondary)]">o haz clic para seleccionar un archivo</p>
+          <h2 class="text-xl font-semibold text-[var(--text-primary)]">Arrastre y suelte su archivo CSV aquí</h2>
+          <p class="text-[var(--text-secondary)]">o haga clic para seleccionar un archivo</p>
           <div class="mt-4 text-xs text-[var(--text-muted)] mono">
             Formato esperado: Separador ";" | Columnas: producto, brand, count_user_review, rating, rating_counts
           </div>
           <div class="mt-8">
             <button id="loadSampleBtn"
               class="px-4 py-2 rounded-lg border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:border-[var(--accent-secondary)] hover:text-[var(--accent-secondary)] transition-colors">
-              Cargar datos de ejemplo (Demo)
+              Cargar datos de ejemplo
             </button>
           </div>
         </div>
@@ -83,7 +83,7 @@
     <div id="dashboardView" class="hidden">
       <!-- Category Filter -->
       <div class="max-w-[1600px] mx-auto px-4 py-6">
-        <div class="flex flex-wrap gap-2" id="categoryFilters" role="tablist" aria-label="Filtrar por categoria">
+        <div class="flex flex-wrap gap-2" id="categoryFilters" role="tablist" aria-label="Filtrar por categoría">
           <!-- Buttons injected here -->
         </div>
       </div>
@@ -94,7 +94,7 @@
           <div class="card metric-card p-4 animate-in stagger-1">
             <div class="flex items-start justify-between">
               <div>
-                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Total Productos</p>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Productos totales</p>
                 <p class="text-2xl font-bold mono" id="totalProductos">--</p>
               </div>
               <div class="p-2 rounded-lg bg-[var(--accent-primary)]/10">
@@ -109,7 +109,7 @@
           <div class="card metric-card p-4 animate-in stagger-2">
             <div class="flex items-start justify-between">
               <div>
-                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Reviews Totales</p>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Reseñas totales</p>
                 <p class="text-2xl font-bold mono" id="totalReviews">--</p>
               </div>
               <div class="p-2 rounded-lg bg-[var(--accent-tertiary)]/10">
@@ -125,7 +125,7 @@
           <div class="card metric-card p-4 animate-in stagger-3">
             <div class="flex items-start justify-between">
               <div>
-                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Rating Promedio</p>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Valoración media</p>
                 <p class="text-2xl font-bold mono" id="avgRating">--</p>
               </div>
               <div class="p-2 rounded-lg bg-[var(--warning)]/10">
@@ -140,7 +140,7 @@
           <div class="card metric-card p-4 animate-in stagger-4">
             <div class="flex items-start justify-between">
               <div>
-                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Marcas</p>
+                <p class="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Número de marcas</p>
                 <p class="text-2xl font-bold" id="totalMarcas">--</p>
               </div>
               <div class="p-2 rounded-lg bg-[var(--accent-secondary)]/10">
@@ -161,7 +161,7 @@
           <!-- Ranking General Categoria -->
           <div class="card p-6 scroll-reveal lg:col-span-2">
             <div class="mb-6">
-              <h2 class="text-lg font-semibold">Ranking General</h2>
+              <h2 class="text-lg font-semibold">Clasificación general</h2>
               <!-- <p class="text-sm text-[var(--text-secondary)]">Ordenado por score ponderado (rating + volumen de reviews)</p> -->
             </div>
 
@@ -171,8 +171,8 @@
                   <tr class="text-left border-b border-[var(--border)] text-[var(--text-muted)]">
                     <th class="py-2">#</th>
                     <th>Marca</th>
-                    <th>Rating</th>
-                    <th>Reviews</th>
+                    <th>Valoración</th>
+                    <th>Reseñas</th>
                     <th>Productos</th>
                   </tr>
                 </thead>
@@ -185,20 +185,20 @@
           <div class="card p-6 scroll-reveal lg:col-span-2">
             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
               <div>
-                <h2 class="text-lg font-semibold">Cuadrante de Posicionamiento</h2>
-                <p class="text-sm text-[var(--text-secondary)]">Mapa de Guerra: Volumen vs Satisfaccion</p>
+                <h2 class="text-lg font-semibold">Matriz de posicionamiento</h2>
+                <p class="text-sm text-[var(--text-secondary)]">Relación entre volumen de reseñas y satisfacción</p>
               </div>
               <div class="flex flex-wrap gap-4 text-xs">
                 <div class="flex items-center gap-2"><span
                     class="w-3 h-3 rounded-full bg-[var(--accent-primary)]"></span><span
-                    class="text-[var(--text-secondary)]">Lideres</span></div>
+                    class="text-[var(--text-secondary)]">Líderes</span></div>
                 <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--warning)]"></span><span
                     class="text-[var(--text-secondary)]">Vulnerables</span></div>
                 <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[var(--danger)]"></span><span
-                    class="text-[var(--text-secondary)]">Crisis</span></div>
+                    class="text-[var(--text-secondary)]">En riesgo</span></div>
                 <div class="flex items-center gap-2"><span
                     class="w-3 h-3 rounded-full bg-[var(--text-muted)]"></span><span
-                    class="text-[var(--text-secondary)]">Irrelevantes</span></div>
+                    class="text-[var(--text-secondary)]">Baja presencia</span></div>
               </div>
             </div>
             <div class="relative h-[400px]"><canvas id="quadrantChart"></canvas></div>
@@ -207,8 +207,8 @@
           <!-- Chart 2: Share of Voice -->
           <div class="card p-6 scroll-reveal">
             <div class="mb-6">
-              <h2 class="text-lg font-semibold">Share of Voice vs Satisfaccion</h2>
-              <p class="text-sm text-[var(--text-secondary)]">Gap de Oportunidad</p>
+              <h2 class="text-lg font-semibold">Cuota de reseñas y satisfacción</h2>
+              <p class="text-sm text-[var(--text-secondary)]">Comparativa de volumen y valoración</p>
             </div>
             <div class="h-[350px]"><canvas id="voiceChart"></canvas></div>
           </div>
@@ -216,8 +216,8 @@
           <!-- Chart 3: Sentiment Stack -->
           <div class="card p-6 scroll-reveal">
             <div class="mb-6">
-              <h2 class="text-lg font-semibold">Sentiment Stack</h2>
-              <p class="text-sm text-[var(--text-secondary)]">Distribucion de estrellas por marca</p>
+              <h2 class="text-lg font-semibold">Distribución de valoraciones</h2>
+              <p class="text-sm text-[var(--text-secondary)]">Distribución por estrellas por marca</p>
             </div>
             <div class="h-[350px]"><canvas id="sentimentChart"></canvas></div>
           </div>
@@ -225,8 +225,8 @@
           <!-- Chart 4: Treemap -->
           <div class="card p-6 scroll-reveal lg:col-span-2">
             <div class="mb-6">
-              <h2 class="text-lg font-semibold">Ranking de Penetracion</h2>
-              <p class="text-sm text-[var(--text-secondary)]">Tamano = Productos | Color = Rating medio</p>
+              <h2 class="text-lg font-semibold">Penetración por marca</h2>
+              <p class="text-sm text-[var(--text-secondary)]">Tamaño = productos | Color = valoración media</p>
             </div>
             <div class="h-[300px]" id="treemapContainer"></div>
           </div>
@@ -241,7 +241,7 @@
     <div class="card max-w-lg w-full p-6">
       <div class="flex items-start justify-between mb-4">
         <div>
-          <h3 id="modalTitle" class="text-xl font-semibold">Detalle de Marca</h3>
+          <h3 id="modalTitle" class="text-xl font-semibold">Detalle de marca</h3>
           <p id="modalSubtitle" class="text-sm text-[var(--text-secondary)]"></p>
         </div>
         <button id="closeModal" class="p-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors"

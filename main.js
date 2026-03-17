@@ -12,7 +12,7 @@ let aggregatedData = [];
 // ==========================================
 function parseCSV(str) {
     if (!window.Papa) {
-        console.error('PapaParse no esta disponible en window.Papa');
+        console.error('PapaParse no está disponible en window.Papa');
         return [];
     }
 
@@ -27,7 +27,7 @@ function parseCSV(str) {
     });
 
     if (result.errors && result.errors.length > 0) {
-        console.warn('PapaParse reporto errores de parseo:', result.errors);
+        console.warn('PapaParse reportó errores de análisis:', result.errors);
     }
 
     return result.data.filter(row => row && row.brand && String(row.brand).trim() !== '');
@@ -69,7 +69,7 @@ function aggregateData(rows, category) {
                 brandsMap[b].distribution[i] += (counts[i] || 0);
             }
         } catch (e) {
-            console.warn("Error parsing rating_counts for row", row.brand, e);
+            console.warn("Error al analizar rating_counts para la fila", row.brand, e);
         }
     });
 
@@ -174,18 +174,18 @@ function initQuadrantChart(data) {
                     backgroundColor: '#161d27',
                     callbacks: {
                         title: (i) => i[0].raw.name,
-                        label: (i) => `Reviews: ${formatNumber(i.raw.x)} | Rating: ${i.raw.y.toFixed(2)}`
+                        label: (i) => `Reseñas: ${formatNumber(i.raw.x)} | Valoración: ${i.raw.y.toFixed(2)}`
                     }
                 }
             },
             scales: {
                 x: {
-                    title: { display: true, text: 'Volumen de Reviews', color: '#7a8a9c' },
+                    title: { display: true, text: 'Volumen de reseñas', color: '#7a8a9c' },
                     grid: { color: 'rgba(30, 42, 56, 0.5)' },
                     ticks: { color: '#4a5a6c' }
                 },
                 y: {
-                    title: { display: true, text: 'Rating Medio', color: '#7a8a9c' },
+                    title: { display: true, text: 'Valoración media', color: '#7a8a9c' },
                     grid: { color: 'rgba(30, 42, 56, 0.5)' },
                     ticks: { color: '#4a5a6c' },
                     suggestedMin: Math.min(...data.map(d => d.rating)) - 0.5,
@@ -213,13 +213,13 @@ function initVoiceChart(data) {
             labels: sorted.map(b => b.name),
             datasets: [
                 {
-                    label: 'Share of Voice (%)',
+                    label: 'Cuota de reseñas (%)',
                     data: sorted.map(b => totalReviews > 0 ? ((b.count_user_review / totalReviews) * 100).toFixed(1) : 0),
                     backgroundColor: '#3b82f6',
                     borderRadius: 4
                 },
                 {
-                    label: 'Rating Normalizado (%)',
+                    label: 'Valoración normalizada (%)',
                     data: sorted.map(b => (b.rating / 5) * 100),
                     backgroundColor: '#00d4aa',
                     borderRadius: 4
@@ -329,7 +329,7 @@ function initTreemap(data) {
         sub.setAttribute('y', y + 32);
         sub.setAttribute('fill', '#e8edf4');
         sub.setAttribute('font-size', '10');
-        sub.textContent = `${b.products} prod | ${b.rating.toFixed(2)}`;
+        sub.textContent = `${b.products} productos | ${b.rating.toFixed(2)}`;
 
         svg.appendChild(rect);
         svg.appendChild(text);
@@ -386,16 +386,16 @@ function showBrandModal(brand) {
     const html = `
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-[var(--bg-secondary)] p-4 rounded-lg">
-                    <p class="text-xs text-[var(--text-muted)]">Reviews</p>
+                    <p class="text-xs text-[var(--text-muted)]">Reseñas</p>
                     <p class="text-xl font-bold">${formatNumber(totalRev)}</p>
                 </div>
                 <div class="bg-[var(--bg-secondary)] p-4 rounded-lg">
-                    <p class="text-xs text-[var(--text-muted)]">Rating</p>
+                    <p class="text-xs text-[var(--text-muted)]">Valoración</p>
                     <p class="text-xl font-bold text-[var(--accent-primary)]">${brand.rating.toFixed(2)}</p>
                 </div>
             </div>
             <div class="bg-[var(--bg-secondary)] p-4 rounded-lg">
-                <p class="text-xs text-[var(--text-muted)] mb-2">Distribucion Estrellas</p>
+                <p class="text-xs text-[var(--text-muted)] mb-2">Distribución por estrellas</p>
                 <div class="flex h-4 rounded overflow-hidden">
                     <div class="bg-[#ef4444]" style="width: ${totalStars > 0 ? (brand.distribution[0] / totalStars) * 100 : 0}%"></div>
                     <div class="bg-[#f97316]" style="width: ${totalStars > 0 ? (brand.distribution[1] / totalStars) * 100 : 0}%"></div>
@@ -483,7 +483,7 @@ async function loadCSVFromFolder() {
         const text = await response.text();
         processCSVData(text);
     } catch (err) {
-        console.error("No se pudo cargar data.csv", err);
+        console.error("No se pudo cargar el archivo CSV predeterminado", err);
     }
 }
 
@@ -535,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleFile(file) {
         if (!file.name.endsWith('.csv')) {
-            alert('Por favor, sube un archivo .csv');
+            alert('Por favor, cargue un archivo .csv');
             return;
         }
 
