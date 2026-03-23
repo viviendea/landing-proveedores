@@ -135,11 +135,16 @@ function normalizeCategory(value) {
     return String(value ?? '').trim();
 }
 
+function getCssColor(variableName, fallback) {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+    return value || fallback;
+}
+
 function getQuadrantColor(rating, reviewCount, medR, medRev) {
-    if (rating >= medR && reviewCount >= medRev) return '#00d4aa'; // Leader
-    if (rating >= medR && reviewCount < medRev) return '#f59e0b'; // Vulnerable
-    if (rating < medR && reviewCount >= medRev) return '#ef4444'; // Crisis
-    return '#4a5a6c'; // Irrelevant
+    if (rating >= medR && reviewCount >= medRev) return '#4212c7';
+    if (rating >= medR && reviewCount < medRev) return '#6d3df1';
+    if (rating < medR && reviewCount >= medRev) return '#dc2626';
+    return '#a3a0c7';
 }
 
 function initQuadrantChart(data) {
@@ -147,6 +152,12 @@ function initQuadrantChart(data) {
     if (charts.quadrant) charts.quadrant.destroy();
 
     if (data.length === 0) return;
+
+    const textPrimary = getCssColor('--text-primary', '#1e1b3a');
+    const textSecondary = getCssColor('--text-secondary', '#4f46a5');
+    const textMuted = getCssColor('--text-muted', '#6d67a3');
+    const borderColor = getCssColor('--border', '#ddd6fe');
+    const cardColor = getCssColor('--bg-card', '#ffffff');
 
     const ratings = data.map(d => d.rating).sort((a, b) => a - b);
     const reviews = data.map(d => d.count_user_review).sort((a, b) => a - b);
@@ -158,7 +169,7 @@ function initQuadrantChart(data) {
         backgroundColor: data.map(b => getQuadrantColor(b.rating, b.count_user_review, medR, medRev)),
         pointRadius: data.map(b => Math.max(8, Math.min(25, Math.sqrt(b.products) * 4))),
         pointHoverRadius: 12,
-        borderColor: 'rgba(255,255,255,0.2)',
+        borderColor: borderColor,
         borderWidth: 2
     }];
 
@@ -171,7 +182,11 @@ function initQuadrantChart(data) {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#161d27',
+                    backgroundColor: cardColor,
+                    titleColor: textPrimary,
+                    bodyColor: textSecondary,
+                    borderColor: borderColor,
+                    borderWidth: 1,
                     callbacks: {
                         title: (i) => i[0].raw.name,
                         label: (i) => `Reseñas: ${formatNumber(i.raw.x)} | Valoración: ${i.raw.y.toFixed(2)}`
@@ -180,21 +195,21 @@ function initQuadrantChart(data) {
             },
             scales: {
                 x: {
-                    title: { display: true, text: 'Volumen de reseñas', color: '#7a8a9c' },
-                    grid: { color: 'rgba(30, 42, 56, 0.5)' },
-                    ticks: { color: '#4a5a6c' }
+                    title: { display: true, text: 'Volumen de reseñas', color: textSecondary },
+                    grid: { color: borderColor },
+                    ticks: { color: textMuted }
                 },
                 y: {
-                    title: { display: true, text: 'Valoración media', color: '#7a8a9c' },
-                    grid: { color: 'rgba(30, 42, 56, 0.5)' },
-                    ticks: { color: '#4a5a6c' },
+                    title: { display: true, text: 'Valoración media', color: textSecondary },
+                    grid: { color: borderColor },
+                    ticks: { color: textMuted },
                     suggestedMin: Math.min(...data.map(d => d.rating)) - 0.5,
                     suggestedMax: 5.1
                 }
             },
-            onClick: (e, elements) => {
-                if (elements.length > 0) showBrandModal(data[elements[0].index]);
-            }
+            // onClick: (e, elements) => {
+            //     if (elements.length > 0) showBrandModal(data[elements[0].index]);
+            // }
         }
     });
 }
@@ -203,6 +218,13 @@ function initVoiceChart(data) {
     const ctx = document.getElementById('voiceChart').getContext('2d');
     if (charts.voice) charts.voice.destroy();
     if (data.length === 0) return;
+
+    const textPrimary = getCssColor('--text-primary', '#1e1b3a');
+    const textSecondary = getCssColor('--text-secondary', '#4f46a5');
+    const textMuted = getCssColor('--text-muted', '#6d67a3');
+    const borderColor = getCssColor('--border', '#ddd6fe');
+    const accentPrimary = getCssColor('--accent-primary', '#4212c7');
+    const accentSecondary = getCssColor('--accent-secondary', '#6d3df1');
 
     const totalReviews = data.reduce((s, b) => s + b.count_user_review, 0);
     const sorted = [...data].sort((a, b) => b.count_user_review - a.count_user_review);
@@ -215,13 +237,13 @@ function initVoiceChart(data) {
                 {
                     label: 'Cuota de reseñas (%)',
                     data: sorted.map(b => totalReviews > 0 ? ((b.count_user_review / totalReviews) * 100).toFixed(1) : 0),
-                    backgroundColor: '#3b82f6',
+                    backgroundColor: accentSecondary,
                     borderRadius: 4
                 },
                 {
                     label: 'Valoración normalizada (%)',
                     data: sorted.map(b => (b.rating / 5) * 100),
-                    backgroundColor: '#00d4aa',
+                    backgroundColor: accentPrimary,
                     borderRadius: 4
                 }
             ]
@@ -230,10 +252,10 @@ function initVoiceChart(data) {
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'top', labels: { color: '#7a8a9c' } } },
+            plugins: { legend: { position: 'top', labels: { color: textSecondary } } },
             scales: {
-                x: { grid: { color: 'rgba(30, 42, 56, 0.5)' }, ticks: { color: '#4a5a6c' } },
-                y: { grid: { display: false }, ticks: { color: '#e8edf4' } }
+                x: { grid: { color: borderColor }, ticks: { color: textMuted } },
+                y: { grid: { display: false }, ticks: { color: textPrimary } }
             }
         }
     });
@@ -243,6 +265,12 @@ function initSentimentChart(data) {
     const ctx = document.getElementById('sentimentChart').getContext('2d');
     if (charts.sentiment) charts.sentiment.destroy();
     if (data.length === 0) return;
+
+    const textPrimary = getCssColor('--text-primary', '#1e1b3a');
+    const textSecondary = getCssColor('--text-secondary', '#4f46a5');
+    const accentPrimary = getCssColor('--accent-primary', '#4212c7');
+    const accentSecondary = getCssColor('--accent-secondary', '#ed6876');
+
 
     const sorted = [...data].sort((a, b) => b.rating - a.rating);
 
@@ -260,18 +288,18 @@ function initSentimentChart(data) {
                 { label: '1★', data: sorted.map(b => getDist(b.distribution)[0]), backgroundColor: '#ef4444' },
                 { label: '2★', data: sorted.map(b => getDist(b.distribution)[1]), backgroundColor: '#f97316' },
                 { label: '3★', data: sorted.map(b => getDist(b.distribution)[2]), backgroundColor: '#f59e0b' },
-                { label: '4★', data: sorted.map(b => getDist(b.distribution)[3]), backgroundColor: '#84cc16' },
-                { label: '5★', data: sorted.map(b => getDist(b.distribution)[4]), backgroundColor: '#00d4aa' }
+                { label: '4★', data: sorted.map(b => getDist(b.distribution)[3]), backgroundColor: accentSecondary },
+                { label: '5★', data: sorted.map(b => getDist(b.distribution)[4]), backgroundColor: accentPrimary }
             ]
         },
         options: {
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'top', labels: { color: '#7a8a9c', boxWidth: 12 } } },
+            plugins: { legend: { position: 'top', labels: { color: textSecondary, boxWidth: 12 } } },
             scales: {
                 x: { stacked: true, max: 100, grid: { display: false }, ticks: { display: false } },
-                y: { stacked: true, grid: { display: false }, ticks: { color: '#e8edf4' } }
+                y: { stacked: true, grid: { display: false }, ticks: { color: textPrimary } }
             }
         }
     });
@@ -305,21 +333,29 @@ function initTreemap(data) {
             y += rowHeight;
         }
 
-        const hue = b.rating >= 4.8 ? 160 : b.rating >= 4.5 ? 120 : b.rating >= 4.0 ? 60 : 0;
+        const fillColor = b.rating >= 4.8
+            ? '#4f25d7'
+            : b.rating >= 4.5
+                ? '#6d3df1'
+                : b.rating >= 4.0
+                    ? '#a78bfa'
+                    : '#ddd6fe';
+        const textColor = b.rating >= 4.5 ? '#ffffff' : '#2f2462';
+        const subTextColor = b.rating >= 4.5 ? '#e9ddff' : '#5f5596';
 
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         rect.setAttribute('x', x);
         rect.setAttribute('y', y);
         rect.setAttribute('width', Math.min(w - padding, width - x));
         rect.setAttribute('height', h);
-        rect.setAttribute('fill', `hsl(${hue}, 70%, 35%)`);
+        rect.setAttribute('fill', fillColor);
         rect.setAttribute('rx', 4);
         rect.setAttribute('class', 'treemap-rect');
 
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         text.setAttribute('x', x + 8);
         text.setAttribute('y', y + 18);
-        text.setAttribute('fill', '#e8edf4');
+        text.setAttribute('fill', textColor);
         text.setAttribute('font-size', '12');
         text.setAttribute('font-weight', '600');
         text.textContent = b.name;
@@ -327,7 +363,7 @@ function initTreemap(data) {
         const sub = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         sub.setAttribute('x', x + 8);
         sub.setAttribute('y', y + 32);
-        sub.setAttribute('fill', '#e8edf4');
+        sub.setAttribute('fill', subTextColor);
         sub.setAttribute('font-size', '10');
         sub.textContent = `${b.products} productos | ${b.rating.toFixed(2)}`;
 
@@ -437,16 +473,22 @@ function processCSVData(csvText) {
 
     currentCategory = categories[0];
 
-    let btnHtml = '';
+    filterContainer.innerHTML = '';
     categories.forEach(cat => {
         const count = rawRows.filter(r => normalizeCategory(r.producto) === cat).length;
-        if (currentCategory === cat) {
-            btnHtml += `<button class="category-btn active px-4 py-2 rounded-lg border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)]" data-category="${cat}">${cat} (${count})</button>`;
-        } else {
-            btnHtml += `<button class="category-btn px-4 py-2 rounded-lg border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)]" data-category="${cat}">${cat} (${count})</button>`;
-        }
+        const btn = document.createElement('button');
+        btn.className = 'category-btn px-4 py-2 rounded-lg border border-[var(--border)] text-sm font-medium';
+        btn.dataset.category = cat;
+        btn.textContent = `${cat} (${count})`;
+        if (cat === currentCategory) btn.classList.add('active');
+        btn.addEventListener('click', () => {
+            filterContainer.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentCategory = cat;
+            updateDashboard(cat);
+        });
+        filterContainer.appendChild(btn);
     });
-    filterContainer.innerHTML = btnHtml;
 
     showDashboard();
     requestAnimationFrame(() => updateDashboard(currentCategory));
@@ -543,16 +585,6 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.onload = (e) => processCSVData(e.target.result);
         reader.readAsText(file);
     }
-
-    // Category Filter Clicks (Delegated)
-    document.getElementById('categoryFilters').addEventListener('click', (e) => {
-        if (e.target.matches('.category-btn')) {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            currentCategory = e.target.dataset.category;
-            updateDashboard(currentCategory);
-        }
-    });
 
     // Modal Close
     document.getElementById('closeModal').addEventListener('click', () => {

@@ -1,16 +1,16 @@
 :root {
-    --bg-primary: #0a0e14;
-    --bg-secondary: #111820;
-    --bg-card: #161d27;
-    --border: #1e2a38;
-    --text-primary: #e8edf4;
-    --text-secondary: #7a8a9c;
-    --text-muted: #4a5a6c;
-    --accent-primary: #00d4aa;
-    --accent-secondary: #ff6b35;
-    --accent-tertiary: #3b82f6;
-    --danger: #ef4444;
-    --warning: #f59e0b;
+    --bg-primary: #f4f4f6;
+    --bg-secondary: #ede9fb;
+    --bg-card: #ffffff;
+    --border: #ddd6fe;
+    --text-primary: #1e1b3a;
+    --text-secondary: #4f46a5;
+    --text-muted: #6d67a3;
+    --accent-primary: #4212c7;
+    --accent-secondary: #ed6876;
+    --accent-tertiary: #5633d8;
+    --danger: #dc2626;
+    --warning: #d97706;
 }
 
 * {
@@ -30,8 +30,8 @@ body {
 
 .bg-grid {
     background-image:
-        linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(66, 18, 199, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(66, 18, 199, 0.025) 1px, transparent 1px);
     background-size: 50px 50px;
 }
 
@@ -92,16 +92,20 @@ body {
 
 .category-btn {
     transition: all 0.3s ease;
+    background: var(--bg-card);
+    color: var(--text-secondary);
 }
 
 .category-btn.active {
     background: var(--accent-primary);
-    color: var(--bg-primary);
+    color: #ffffff !important;
+    border-color: var(--accent-primary);
 }
 
 .category-btn:not(.active):hover {
     border-color: var(--accent-primary);
     color: var(--accent-primary);
+    background: var(--bg-secondary);
 }
 
 .scroll-reveal {
@@ -131,6 +135,7 @@ body {
 
 .metric-card:hover {
     transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(66, 18, 199, 0.12);
 }
 
 :focus-visible {
@@ -151,12 +156,12 @@ body {
 .drop-zone {
     border: 2px dashed var(--border);
     transition: all 0.3s ease;
-    background: rgba(22, 29, 39, 0.5);
+    background: rgba(255, 255, 255, 0.9);
 }
 
 .drop-zone.drag-over {
     border-color: var(--accent-primary);
-    background: rgba(0, 212, 170, 0.05);
+    background: rgba(66, 18, 199, 0.06);
     transform: scale(1.01);
 }
 
